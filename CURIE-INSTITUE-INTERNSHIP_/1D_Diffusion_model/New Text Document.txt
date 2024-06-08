@@ -1,0 +1,22 @@
+In this folder you will find the different versions of my codes where the different diffusion models of hormones are.
+
+In Diffusion_model_1D_v1 we plot 
+- the source term shape in space
+- the initial conditions at boundaries for the hormone concentration
+- the concentration of hormones in the middle of the worm in time
+- the concentration of hormones at stationnary state computed with the given boundary conditions in space
+- the concentration of hormones at stationnary state of a gaussian analytical model where the worm would be an infinite worm with the given boundary conditions in space
+- the flux in space at stationnary state
+- the flux in time in the middle of the worm
+- the flux in time at the edges
+
+In Diffusion_model_1D_v2 we plot:
+- the source term shape in space
+- the initial conditions at boundaries for the hormone concentration
+- the concentration of hormones in the middle of the worm in time
+- the concentration of hormones at stationnary state computed with the given boundary conditions in space
+- the concentration of hormones at stationnary state of a gaussian analytical model where the worm would be an infinite worm with the given boundary conditions in space
+- the standard deviation of the concentration of hormones curve for every timepoint => sigma(t) = f([Hormones](x;t))
+- the flux in space in all the worm at the end of the simulation
+- the flux in time in the middle of the worm
+- the flux in time at the edges

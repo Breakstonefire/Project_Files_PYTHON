@@ -1,0 +1,29 @@
+INCREASE GREEN
+red 			= [255,0,0]
+red orange 		= [255,83,0]
+orange 		= [255,165,0]
+orange yellow 	= [255,210,0]
+yellow 		= [255,255,0]
+
+DECREASE RED
+yellow green 	= [128,255,0]
+green 		= [0,255,0]
+
+green blue 		= [0,128,128]
+INCREASE BLUE
+
+DECREASE GREEN
+
+INCREASE RED
+
+DECREASE BLUE
+
+
+blue			= [0,0,255]
+blue indigo 	= [37,0,63]
+indigo 		= [75,0,130]
+indigo purple 	= [102,0,129]
+purple 		= [128,0,128]
+purple red		= [190,0,192]
+
+# red again		= [255 , 0   , 0  ]

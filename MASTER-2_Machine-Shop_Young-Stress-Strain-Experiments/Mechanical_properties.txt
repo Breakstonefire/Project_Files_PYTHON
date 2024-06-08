@@ -1,0 +1,16 @@
+Characteristics of the samples:
+Mesure de la section (au pied à coulisse):
+
+Epaisseur = 2.1 mm
+Largeur = 5.1 mm
+Section = 10.71 mm² = 1.071*10-5 m²
+
+Young_Modulus:
+
+Et = [220 , 2370 , 2360 , 2380 , 2200 , 2360 , 1850 , 2110 , 2120]
+
+Highest_Relative_Elongation (in % = Delta_L/L0):
+
+eps = [0.9 , 3.7 , 3.6 , 3.7 , 3.7 , 3.8 , 3.9 , 3.9 , 3.9 ]
+
+Titles = ["PLA_10_rect1.TRA","PLA_10_rectpas_casse.TRA","PLA_10_rect3.TRA","PLA_50_grid_1_bizzar.TRA","PLA_50_grid_2.TRA","PLA_50_grid_3.TRA","PLA_100_rect_1.TRA","PLA_100_rect2.TRA","PLA_100_rect3.TRA"]
