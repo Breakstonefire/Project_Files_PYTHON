@@ -12,9 +12,8 @@ Created on Sun May 19 09:10:03 2024
 
 g = globals() # Inititalizing g with globals()
 d = dir() # Initializing d with dir() - this stores a list of all the variables in the program
-for obj in d : # Checking user-defined variables in the directory
-  if not obj.startswith('__') : # Checking for built-in variables/functions
-    del globals()[obj] # Deleting the said obj, since a user-defined function
+for obj in d : # Checking user-defined variables in the directory # Checking for built-in variables/functions
+  if not obj.startswith('__') : del globals()[obj] # Deleting the said obj, since a user-defined function
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # Importing Libraries # # # # # # # # # # # # # # # # # # # # # #
@@ -36,22 +35,15 @@ plt.close('all')
 def convert_data_from_str_to_float(x) :
   
   BOOL_Exposant = False
-  
   for i in range(len(x)) :
-    
-    if x[i] == 'E' and BOOL_Exposant == False :
-      BOOL_Exposant = True
-    
-    elif x[i] == 'E' and BOOL_Exposant == True :
+    if    x[i] == 'E' and BOOL_Exposant == False  : BOOL_Exposant = True
+    elif  x[i] == 'E' and BOOL_Exposant == True   :
       print('\nERROR :\n\tImpossible conversion, two or more exponents ...')
       return None
-  
-  if BOOL_Exposant == False : return float(x)
-  
-  elif BOOL_Exposant == True :
+  if    BOOL_Exposant == False  : return float(x)
+  elif  BOOL_Exposant == True   :
     for i in range(len(x)) :
-      if x[i] == 'E' or x[i] == 'e' :
-        return float(x[0:i]) * pow(10 , float(x[i+1 : len(x)]))
+      if x[i] == 'E' or x[i] == 'e' : return float(x[0:i]) * pow(10 , float(x[i+1 : len(x)]))
 
 def ReturnRGBColorCode(color_string = 'red') :
   if    color_string == 'white'   or color_string == 'blanc'  : return [1   , 1   , 1]
@@ -73,6 +65,7 @@ def ReturnRGBColorCode(color_string = 'red') :
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # Main () # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Saving the starting time
 TIME_START_PROGRAM = time.time()
 
 #############
@@ -105,17 +98,20 @@ Number_of_Expected_Files_without_Background = 3
 MUTE_MESSAGE_DETAILED = True # True # False
 
 # Defining the reading pourcentage step between two messages in the command window
-PourcentageStep = 9
+PourcentageStep = 10
 
 # Defining the accepted caracters for 'pure data' to identify the header and the real data numbers
 AcceptedCaracters_for_PureData = ",.+-E 0123456789\t\n\r" # The space and comma and dot and E letter might be present in the lines containing pure data
 
-# Defining the delimiter caracters' list to slice string caracters and correcty extract data numbers
-delimiter1 = ' '  # Space caracter
-delimiter2 = '\t' # Tabulation
-delimiter3 = '\n' # Back to the next line
-delimiter4 = '\r' # Here it is a space caracter
-All_Delimiters_STRING = delimiter1 + delimiter2 + delimiter3 + delimiter4
+# Defining the HEADER delimiter caracter to slice string caracters and correcty extract HEADER variables and their names
+HeaderDelimiter = ':' # Double-dot caracter
+
+# Defining the PURE DATA delimiter caracters' list to slice string caracters and correcty extract PURE DATA numbers
+PureDataDelimiter1 = ' '  # Space caracter
+PureDataDelimiter2 = '\t' # Tabulation
+PureDataDelimiter3 = '\n' # Back to the next line
+PureDataDelimiter4 = '\r' # Here it is a space caracter
+All_PureData_Delimiters_STRING = PureDataDelimiter1 + PureDataDelimiter2 + PureDataDelimiter3 + PureDataDelimiter4
 
 # Defining the number of columns expected in the 'Pure Data' lines <=> number of variables in the 'Pure Data'
 columns_predicted = 5
@@ -157,13 +153,25 @@ Volume_label          = "Volume [nm3]"
 Area_label            = "Area [nm²]"
 Background_label      = "Background"
 
+# Setting the range of X AXIS to show - setting the xmin and xmax to show in every plot
+MODE_XminXmax_to_show = "relative"  # "relative" defines Xmin = 0 and Xmax as a given percentage of the absolute Xmax of each original data
+                                    # "absolute" defines the Xmin and Xmax values to consider for every plots
+if MODE_XminXmax_to_show == "relative" : # -> Parameters for a realtive Xmin Xmax setting
+  Xmin_for_plots  = 0
+  Percentage      = 10 # Xmax is defined as a given percentage of the absolute Xmax of each original data
+elif MODE_XminXmax_to_show == "absolute" : # -> Parameters for an absolute Xmin Xmax setting
+  Xmin_for_plots = 0
+  Xmax_for_plots = 800
+
 # Setting the defaults curve transparencies, from 0 to 1 (1 is plenty, 0 is fully transparent)
 Main_Curve_Transparency       = 1
 Std_Curve_Transparency        = 0.2
 Background_Curve_Transparency = 0.1
 
-# Export to excel
-ExcelName = 'EXCEL_ZetaPotential'
+# Setting EXCEL parameters in order to export data to excel format
+ExcelName                 = "EXCEL_ZetaPotential"
+Excel_Sheet_Default_Name  = "Excel_Sheet_1_from_python"
+Excel_Cells_to_Freeze     = "A2"
 
 #################################################################################
 #### THE FOLLOWING BLOCK CAN BE COPY-PASTE IN EVERY CODE TO PLOT K colored curves
@@ -252,7 +260,7 @@ for i in range(0 , Number_of_RightFormatFiles , 1) :
     print("\t\t-> This file is taken as BACKGROUND FILE")
     BOOL_BackgroundFileFound == True
     List_ALL_LINES_OF_ALL_FILES[0] = List_of_Lines_of_Current_File
-  
+    
   elif count_number_of_files_treated < Number_of_Expected_Files_without_Background :
     
     print("\t\t-> This file is NOT taken as BACKGROUND FILE")
@@ -260,12 +268,14 @@ for i in range(0 , Number_of_RightFormatFiles , 1) :
     List_ALL_LINES_OF_ALL_FILES[count_number_of_files_treated] = List_of_Lines_of_Current_File
 
 # INITIALIZING THE LISTS THAT WILL CONTAIN EVERY ARRAY OF DATA TAKEN IN EVERY FILES
-Number_of_Measurements_MAX = max([len(List_ALL_LINES_OF_ALL_FILES[u]) for u in range(0 , len(List_ALL_LINES_OF_ALL_FILES) , 1)])
-List_of_ALL_Size           = [np.ones(Number_of_Measurements_MAX) for u in range(Number_of_RightFormatFiles)]
-List_of_ALL_Number         = [np.ones(Number_of_Measurements_MAX) for u in range(Number_of_RightFormatFiles)]
-List_of_ALL_Concentration  = [np.ones(Number_of_Measurements_MAX) for u in range(Number_of_RightFormatFiles)]
-List_of_ALL_Volume         = [np.ones(Number_of_Measurements_MAX) for u in range(Number_of_RightFormatFiles)]
-List_of_ALL_Area           = [np.ones(Number_of_Measurements_MAX) for u in range(Number_of_RightFormatFiles)]
+Number_of_Measurements_MAX        = max([len(List_ALL_LINES_OF_ALL_FILES[u])  for u in range(0 , len(List_ALL_LINES_OF_ALL_FILES) , 1)])
+List_of_ALL_Header_Variable_Names = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for HEADER DATA ONLY
+List_of_ALL_Header_Variable_Value = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for HEADER DATA ONLY
+List_of_ALL_Size                  = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for PURE DATA ONLY
+List_of_ALL_Number                = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for PURE DATA ONLY
+List_of_ALL_Concentration         = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for PURE DATA ONLY
+List_of_ALL_Volume                = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for PURE DATA ONLY
+List_of_ALL_Area                  = [np.ones(Number_of_Measurements_MAX)      for u in range(Number_of_RightFormatFiles)] # Lists for PURE DATA ONLY
 
 # Reading the lines and skipping the header of each and every file
 for num_file_tmp in range(0 , Number_of_RightFormatFiles , 1) :
@@ -283,13 +293,13 @@ for num_file_tmp in range(0 , Number_of_RightFormatFiles , 1) :
   # Reading the file line by line to identify wich lines are part of the header and which lines are part of 'Pure Data'
   PreviousReadingPourcentage = 0
   
-  for num_line in range(0 , len(CurrentFile) , 1) :
+  for num_line in range(0 , Number_of_lines_MAX , 1) :
     
     current_line = CurrentFile[num_line]
     
     # Showing reading pourcentage
     ReadingPourcentage = int(max(0 , 100 * num_line / Number_of_lines_MAX))
-    if int(PreviousReadingPourcentage) + PourcentageStep < int(ReadingPourcentage) :
+    if int(PreviousReadingPourcentage) + PourcentageStep <= int(ReadingPourcentage) :
       print("\t\tFILE READING : Line {}/{} = {}%".format(num_line , Number_of_lines_MAX , ReadingPourcentage))
       PreviousReadingPourcentage = int(ReadingPourcentage)
     
@@ -307,17 +317,73 @@ for num_file_tmp in range(0 , Number_of_RightFormatFiles , 1) :
           if MUTE_MESSAGE_DETAILED == False : print("\t\t\tLINE {} : #{}th Caracter '{}' unaccepted for 'Pure Data' -> HEADER LINE ".format(num_line , num_carac , caracter))
           
     # Affecting the line number to the header or not
-    if BOOLEAN_LineWithPureData == True :
-      List_of_PureDataLineNumbers.append(num_line)
-      if MUTE_MESSAGE_DETAILED == False : print("\t\t\tLINE {} -> PURE DATA LINE ".format(num_line))
-    else :
-      List_of_HeaderLineNumbers  .append(num_line - 1)
-      
+    if BOOLEAN_LineWithPureData == True : List_of_PureDataLineNumbers.append(num_line)
+    else                                : List_of_HeaderLineNumbers  .append(num_line)
+    
+    # Showing which type of line it is
+    if MUTE_MESSAGE_DETAILED == False :
+      if BOOLEAN_LineWithPureData == True : print("\t\t\tLINE {} -> PURE DATA LINE".format(num_line))
+      else                                : print("\t\t\tLINE {} -> HEADER DATA LINE".format(num_line))
+  
+  # Showing the number of lines detected for each line type
   Number_of_lines_HEADER_tmp = len(List_of_HeaderLineNumbers)
   Number_of_lines_DATA_tmp   = len(List_of_PureDataLineNumbers)
   print("\n\t\t{} lines for Header".format(Number_of_lines_HEADER_tmp))
   print("\t\t{} lines for Data".format(Number_of_lines_DATA_tmp))
   
+  ## DATA EXTRACTION PART - HEADER + PURE DATA
+  print("\n\t\tEXTRACTING DATA FROM HEADER + PURE DATA")
+  
+  # HEADER DATA EXTRACTION
+  # Initializing the lists (to np.nan values) that will contain the converted string chains to real numbers
+  LHeaderVariableName_tmp   = ['' for u in range(Number_of_lines_HEADER_tmp)]
+  LHeaderVariableValue_tmp  = ['' for u in range(Number_of_lines_HEADER_tmp)]
+  
+  # Extracting and converting data from 'Header' lines
+  print("\n\t\tExtracting and converting data from 'Header' lines")
+  for num_line in range(0 , Number_of_lines_HEADER_tmp , 1) :
+    current_line_number       = List_of_HeaderLineNumbers[num_line]
+    current_line              = CurrentFile[current_line_number]
+    ind_previous_delimiter    = -1 # Initializing the previous delimiter position in the string chain to -1
+    BOOL_HeaderDelimiterFound = False
+    
+    # Reading every caracter to identify the different string chains and the delimiters between them
+    for num_carac in range(0 , len(current_line) , 1) :
+      
+      caracter = current_line[num_carac].upper()
+      if BOOL_HeaderDelimiterFound == False : # IF ANY HEADER DELIMITER HASN'T BEEN FOUND YET
+        
+        if caracter == HeaderDelimiter : # IF A HEADER DELIMITER HAS BEEN FOUND
+          
+          if ind_previous_delimiter + 1 < num_carac : # IF THERE IS AT LEAST ONE CARACTER BETWEEN THE PREVIOUS DELIMITER AND THE CURRENT ONE
+            
+            BOOL_HeaderDelimiterFound = True
+            
+            # Adding the header variable name first
+            VariableName_str_tmp = current_line[ind_previous_delimiter + 1 : num_carac] # Extracting the string chain
+            LHeaderVariableName_tmp[num_line] = VariableName_str_tmp # Listing every string chain
+            
+            # Adding the header variable value after
+            Variables_str_tmp = current_line[num_carac + 1 : len(current_line)] # Extracting the string chain
+            LHeaderVariableValue_tmp[num_line] = Variables_str_tmp # Listing every string chain
+            
+          ind_previous_delimiter = num_carac # Refreshing the value of the previous delimiter
+          
+        elif (num_carac == len(current_line) - 1) : # IF THE END OF THE LINE HAS BEEN REACHED
+        
+          # Adding the header variable name first
+          VariableName_str_tmp = current_line[ind_previous_delimiter + 1 : num_carac] # Extracting the string chain
+          LHeaderVariableName_tmp[num_line] = VariableName_str_tmp # Listing every string chain
+          
+          # Adding the header variable value after
+          Variables_str_tmp = current_line[num_carac + 1 : len(current_line)] # Extracting the string chain
+          LHeaderVariableValue_tmp[num_line] = Variables_str_tmp # Listing every string chain
+  
+  # Listing every array of header data in the big lists that will contain every array of header data of every file
+  List_of_ALL_Header_Variable_Names[num_file_tmp] = LHeaderVariableName_tmp
+  List_of_ALL_Header_Variable_Value[num_file_tmp] = LHeaderVariableValue_tmp
+          
+  # PURE DATA EXTRACTION  
   # Initializing the lists (to np.nan values) that will contain the converted string chains to real numbers
   LSize_tmp           = np.nan * np.ones(Number_of_lines_DATA_tmp)
   LNumber_tmp         = np.nan * np.ones(Number_of_lines_DATA_tmp)
@@ -343,7 +409,7 @@ for num_file_tmp in range(0 , Number_of_RightFormatFiles , 1) :
     for num_carac in range(0 , len(current_line) , 1) :
       
       caracter = current_line[num_carac].upper()
-      if All_Delimiters_STRING.find(caracter) > -1 : # IF A DELIMITER HAS BEEN FOUND
+      if All_PureData_Delimiters_STRING.find(caracter) > -1 : # IF A DELIMITER HAS BEEN FOUND
         
         if ind_previous_delimiter + 1 < num_carac : # IF THERE IS AT LEAST ONE CARACTER BETWEEN THE PREVIOUS DELIMITER AND THE CURRENT ONE
         
@@ -422,13 +488,58 @@ for num_file_tmp in range(0 , Number_of_RightFormatFiles , 1) :
   List_of_ALL_Volume       [num_file_tmp] = LVolume_tmp
   List_of_ALL_Area         [num_file_tmp] = LArea_tmp
 
+####################################################################
+## CHECKING HEADER DATA VARIABLE NAMES TO BE THE SAMES IN EVERY FILE
+print("\nChecking header data variable names to be the sames in every file")
+print("\n\t# Checking the number of lines in every headers to be the same")
+BOOL_Identical_Variable_Number_HEADER = True
+expected_variable_number_header = len(List_of_ALL_Header_Variable_Names[0]) # The first header found is taken as the reference by default
+for i in range(1 , len(List_of_ALL_Header_Variable_Names) , 1) :
+  current_number_of_measurements = len(List_of_ALL_Header_Variable_Names[i])
+  if current_number_of_measurements != expected_variable_number_header :
+    BOOL_Identical_Variable_Number_HEADER = False
+    print("\t\t{}th list hasn't the same number of variable as expected : {} (list {}) / {} (expect.)".format(i , current_number_of_measurements , i , expected_variable_number_header))
+
+BOOL_Identical_Variable_Name_HEADER_tmp = True
+if BOOL_Identical_Variable_Number_HEADER == True :
+  print("\n\t# Checking every variable names for every line in the header to be indentical from a file to another")
+  BOOL_Identical_Variable_Name_HEADER_tmp = True
+  
+  for num_variable_name in range(0 , len(List_of_ALL_Header_Variable_Names[0]) , 1) :
+    expected_variable_name_header_tmp = List_of_ALL_Header_Variable_Names[0][num_variable_name] # The first header found is taken as the reference by default
+    
+    for num_file_tmp in range(1 , Number_of_RightFormatFiles , 1) :
+      variable_name_header_tmp = List_of_ALL_Header_Variable_Names[num_file_tmp][num_variable_name] # The first header found is taken as the reference by default
+      
+      if variable_name_header_tmp != expected_variable_name_header_tmp :
+        BOOL_Identical_Variable_Name_HEADER_tmp = False
+        print("\t\t{}th variable name isn't the same as expected : (var. name {} // expected in first file) => '{}' / '{}'".format(num_variable_name , num_variable_name , variable_name_header_tmp , expected_variable_name_header_tmp))
+
+else : BOOL_Identical_Variable_Name_HEADER_tmp = False
+
+if BOOL_Identical_Variable_Number_HEADER == True and BOOL_Identical_Variable_Name_HEADER_tmp == True :
+  print("\t\tThe header variable names are identicals, the first header variable names are then taken as the reference")
+  List_Header_Variable_Names_for_EXCEL    = List_of_ALL_Header_Variable_Names[0]
+  List_Header_Variable_Strings_for_EXCEL  = List_of_ALL_Header_Variable_Value
+
+else :
+  print("\t\tWARNING :")
+  print("\t\t\tThe headers are different, the first header variable names are taken as the reference no matter the others")
+  List_Header_Variable_Names_for_EXCEL    = List_of_ALL_Header_Variable_Names[0]
+  List_Header_Variable_Strings_for_EXCEL  = List_of_ALL_Header_Variable_Value
+  
+# Deleting the eventual last line of the HEADER because it contains the main names of variables represented in the graphs without more information in the header
+print("\t\tDeleting last line of the HEADER because it contains the main names of variables represented in the graphs without more information in the header")
+List_Header_Variable_Names_for_EXCEL    = List_Header_Variable_Names_for_EXCEL  [0 : len(List_Header_Variable_Names_for_EXCEL)    - 1]
+for num_file_tmp in range(0 , Number_of_RightFormatFiles , 1) : List_Header_Variable_Strings_for_EXCEL[num_file_tmp]  = List_Header_Variable_Strings_for_EXCEL[num_file_tmp][0 : len(List_Header_Variable_Strings_for_EXCEL[num_file_tmp])  - 1]
+
 ######################################################################
 ## CHECKING THE NUMBER OF PURE DATA LINES TO BE THE SAME IN EVERY FILE
 print("\nChecking the amount of data to be the same amount in every file")
 
 print("\n\t# Checking for SIZE DATA")
 BOOL_Correct_number_of_measurements_SIZE  = True
-expected_number_of_measurements_SIZE      = len(List_of_ALL_Size[0])
+expected_number_of_measurements_SIZE      = len(List_of_ALL_Size[0]) # The first list found is taken as the reference by default
 for i in range(1 , len(List_of_ALL_Size) , 1) :
   current_number_of_measurements = len(List_of_ALL_Size[i])
   if current_number_of_measurements != expected_number_of_measurements_SIZE :
@@ -437,7 +548,7 @@ for i in range(1 , len(List_of_ALL_Size) , 1) :
 
 print("\n\t# Checking for NUMBER DATA")
 BOOL_Correct_number_of_measurements_NUMBER  = True
-expected_number_of_measurements_NUMBER      = len(List_of_ALL_Number[0])
+expected_number_of_measurements_NUMBER      = len(List_of_ALL_Number[0]) # The first list found is taken as the reference by default
 for i in range(1 , len(List_of_ALL_Number) , 1) :
   current_number_of_measurements = len(List_of_ALL_Number[i])
   if current_number_of_measurements != expected_number_of_measurements_NUMBER :
@@ -446,7 +557,7 @@ for i in range(1 , len(List_of_ALL_Number) , 1) :
 
 print("\n\t# Checking for CONCENTRATION DATA")
 BOOL_Correct_number_of_measurements_CONCENTRATION = True
-expected_number_of_measurements_CONCENTRATION = len(List_of_ALL_Concentration[0])
+expected_number_of_measurements_CONCENTRATION = len(List_of_ALL_Concentration[0]) # The first list found is taken as the reference by default
 for i in range(1 , len(List_of_ALL_Concentration) , 1) :
   current_number_of_measurements = len(List_of_ALL_Concentration[i])
   if current_number_of_measurements != expected_number_of_measurements_CONCENTRATION :
@@ -455,7 +566,7 @@ for i in range(1 , len(List_of_ALL_Concentration) , 1) :
 
 print("\n\t# Checking for VOLUME DATA")
 BOOL_Correct_number_of_measurements_VOLUME = True
-expected_number_of_measurements_VOLUME = len(List_of_ALL_Volume[0])
+expected_number_of_measurements_VOLUME = len(List_of_ALL_Volume[0]) # The first list found is taken as the reference by default
 for i in range(1 , len(List_of_ALL_Volume) , 1) :
   current_number_of_measurements = len(List_of_ALL_Volume[i])
   if current_number_of_measurements != expected_number_of_measurements_VOLUME :
@@ -464,7 +575,7 @@ for i in range(1 , len(List_of_ALL_Volume) , 1) :
 
 print("\n\t# Checking for AREA DATA")
 BOOL_Correct_number_of_measurements_AREA = True
-expected_number_of_measurements_AREA = len(List_of_ALL_Area[0])
+expected_number_of_measurements_AREA = len(List_of_ALL_Area[0]) # The first list found is taken as the reference by default
 for i in range(1 , len(List_of_ALL_Area) , 1) :
   current_number_of_measurements = len(List_of_ALL_Area[i])
   if current_number_of_measurements != expected_number_of_measurements_AREA :
@@ -595,97 +706,134 @@ print('\nPlotting the results in figures, graphs and curves ...')
 fig1 = plt.figure(1 , figsize = (DefaultFigureWidth , DefaultFigureHeight) , dpi = DefaultDPIResolution , facecolor = DefaultFaceColor , edgecolor = DefaultEdgeColor , layout = DefaultLayout)
 plt.subplot(231)
 plt.title("Particle {} over (-) arbitrary unit".format(Size_label))
-plt.scatter(np.cumsum(np.ones(len(LMean_Size))) , LMean_Size          , label = Size_label + '; r² = {}'.format(R2_Size)  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Size , alpha = Main_Curve_Transparency)
-plt.scatter(np.cumsum(np.ones(len(LMean_Size))) , LBackground_on_Size , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Size)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.scatter(X_Axis_Arbitrary_Units , LMean_Size          , label = Size_label + '; r² = {}'.format(R2_Size)  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Size , alpha = Main_Curve_Transparency)
+plt.scatter(X_Axis_Arbitrary_Units , LBackground_on_Size , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Size_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(232)
 plt.title("Particle {} over (-) arbitrary unit".format(Number_label))
-plt.scatter(np.cumsum(np.ones(len(LMean_Number))) , LMean_Number          , label = Number_label      , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Number , alpha = Main_Curve_Transparency)
-plt.scatter(np.cumsum(np.ones(len(LMean_Number))) , LBackground_on_Number , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Number)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.scatter(X_Axis_Arbitrary_Units , LMean_Number          , label = Number_label      , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Number , alpha = Main_Curve_Transparency)
+plt.scatter(X_Axis_Arbitrary_Units , LBackground_on_Number , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Number_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(233)
 plt.title("Particle {} over (-) arbitrary unit".format(Concentration_label))
-plt.scatter(np.cumsum(np.ones(len(LMean_Concentration))) , LMean_Concentration           , label = Concentration_label , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Concentration , alpha = Main_Curve_Transparency)
-plt.scatter(np.cumsum(np.ones(len(LMean_Concentration))) , LBackground_on_Concentration  , label = Background_label    , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Concentration)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.scatter(X_Axis_Arbitrary_Units , LMean_Concentration           , label = Concentration_label , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Concentration , alpha = Main_Curve_Transparency)
+plt.scatter(X_Axis_Arbitrary_Units , LBackground_on_Concentration  , label = Background_label    , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Concentration_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(234)
 plt.title("Particle {} over (-) arbitrary unit".format(Volume_label))
-plt.scatter(np.cumsum(np.ones(len(LMean_Volume))) , LMean_Volume          , label = Volume_label      , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Volume , alpha = Main_Curve_Transparency)
-plt.scatter(np.cumsum(np.ones(len(LMean_Volume))) , LBackground_on_Volume , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Volume)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.scatter(X_Axis_Arbitrary_Units , LMean_Volume          , label = Volume_label      , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Volume , alpha = Main_Curve_Transparency)
+plt.scatter(X_Axis_Arbitrary_Units , LBackground_on_Volume , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Volume_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(235)
 plt.title("Particle {} over (-) arbitrary unit".format(Area_label))
-plt.scatter(np.cumsum(np.ones(len(LMean_Area))) , LMean_Area          , label = Area_label        , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Area , alpha = Main_Curve_Transparency)
-plt.scatter(np.cumsum(np.ones(len(LMean_Area))) , LBackground_on_Area , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Area)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.scatter(X_Axis_Arbitrary_Units , LMean_Area          , label = Area_label        , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Area , alpha = Main_Curve_Transparency)
+plt.scatter(X_Axis_Arbitrary_Units , LBackground_on_Area , label = Background_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Background , alpha = Background_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Area_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
+
+plt.show()
 
 ###########
 ## FIGURE 2
 fig2 = plt.figure(2 , figsize = (DefaultFigureWidth , DefaultFigureHeight) , dpi = DefaultDPIResolution , facecolor = DefaultFaceColor , edgecolor = DefaultEdgeColor , layout = DefaultLayout)
 plt.subplot(231)
 plt.title("Particle {} over (-) arbitrary unit".format(Size_label))
-plt.plot(         np.cumsum(np.ones(len(LMean_Size)))  , LMean_Size                                      , label = Size_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Size       , alpha = Main_Curve_Transparency)
-plt.fill_between( np.cumsum(np.ones(len(LMean_Size)))  , LMean_Size + LStd_Size , LMean_Size - LStd_Size , label = 'Envelope of ' + Size_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_SizeSTD  , alpha = Std_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Size)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.plot(         X_Axis_Arbitrary_Units  , LMean_Size                                      , label = Size_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Size       , alpha = Main_Curve_Transparency)
+plt.fill_between( X_Axis_Arbitrary_Units  , LMean_Size + LStd_Size , LMean_Size - LStd_Size , label = 'Envelope of ' + Size_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_SizeSTD  , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Size_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(232)
 plt.title("Particle {} over (-) arbitrary unit".format(Number_label))
-plt.plot(         np.cumsum(np.ones(len(LMean_Number)))  , LMean_Number                                             , label = Number_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Number     , alpha = Main_Curve_Transparency)
-plt.fill_between( np.cumsum(np.ones(len(LMean_Number)))  , LMean_Number + LStd_Number , LMean_Number - LStd_Number  , label = 'Envelope of ' + Number_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_NumberSTD  , alpha = Std_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Number)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.plot(         X_Axis_Arbitrary_Units  , LMean_Number                                             , label = Number_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Number     , alpha = Main_Curve_Transparency)
+plt.fill_between( X_Axis_Arbitrary_Units  , LMean_Number + LStd_Number , LMean_Number - LStd_Number  , label = 'Envelope of ' + Number_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_NumberSTD  , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Number_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(233)
 plt.title("Particle {} over (-) arbitrary unit".format(Concentration_label))
-plt.plot(         np.cumsum(np.ones(len(LMean_Concentration)))  , LMean_Concentration                                                                 , label = Concentration_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Concentration     , alpha = Main_Curve_Transparency)
-plt.fill_between( np.cumsum(np.ones(len(LMean_Concentration)))  , LMean_Concentration + LStd_Concentration , LMean_Concentration - LStd_Concentration , label = 'Envelope of ' + Concentration_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_ConcentrationSTD  , alpha = Std_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Concentration)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.plot(         X_Axis_Arbitrary_Units  , LMean_Concentration                                                                 , label = Concentration_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Concentration     , alpha = Main_Curve_Transparency)
+plt.fill_between( X_Axis_Arbitrary_Units  , LMean_Concentration + LStd_Concentration , LMean_Concentration - LStd_Concentration , label = 'Envelope of ' + Concentration_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_ConcentrationSTD  , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Concentration_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(234)
 plt.title("Particle {} over (-) arbitrary unit".format(Volume_label))
-plt.plot(         np.cumsum(np.ones(len(LMean_Volume)))  , LMean_Volume                                             , label = Volume_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Volume     , alpha = Main_Curve_Transparency)
-plt.fill_between( np.cumsum(np.ones(len(LMean_Volume)))  , LMean_Volume + LStd_Volume , LMean_Volume - LStd_Volume  , label = 'Envelope of ' + Volume_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_VolumeSTD  , alpha = Std_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Volume)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.plot(         X_Axis_Arbitrary_Units  , LMean_Volume                                             , label = Volume_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Volume     , alpha = Main_Curve_Transparency)
+plt.fill_between( X_Axis_Arbitrary_Units  , LMean_Volume + LStd_Volume , LMean_Volume - LStd_Volume  , label = 'Envelope of ' + Volume_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_VolumeSTD  , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Volume_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 plt.subplot(235)
 plt.title("Particle {} over (-) arbitrary unit".format(Area_label))
-plt.plot(         np.cumsum(np.ones(len(LMean_Area)))  , LMean_Area                                     , label = Area_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Area     , alpha = Main_Curve_Transparency)
-plt.fill_between( np.cumsum(np.ones(len(LMean_Area)))  , LMean_Area + LStd_Area , LStd_Area - LStd_Area , label = 'Envelope of ' + Area_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_AreaSTD  , alpha = Std_Curve_Transparency)
+X_Axis_Arbitrary_Units = np.cumsum(np.ones(len(LMean_Area)))
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(X_Axis_Arbitrary_Units) / 100
+plt.plot(         X_Axis_Arbitrary_Units  , LMean_Area                                     , label = Area_label                  , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Area     , alpha = Main_Curve_Transparency)
+plt.fill_between( X_Axis_Arbitrary_Units  , LMean_Area + LStd_Area , LStd_Area - LStd_Area , label = 'Envelope of ' + Area_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_AreaSTD  , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel("(-) arbitrary unit")
 plt.ylabel(Area_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
 
+plt.show()
+
 ###########
 ## FIGURE 3
+if MODE_XminXmax_to_show == "relative" : Xmax_for_plots = Percentage * np.max(LMean_Size) / 100 # Setting the Xmax for every following plots
+
 fig3 = plt.figure(3 , figsize = (DefaultFigureWidth , DefaultFigureHeight) , dpi = DefaultDPIResolution , facecolor = DefaultFaceColor , edgecolor = DefaultEdgeColor , layout = DefaultLayout)
 plt.subplot(221)
 plt.title("Particle {} over {}".format(Number_label , Size_label))
 plt.scatter( LMean_Size , LMean_Number_minus_Background               , label = Number_label                            , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Number  , alpha = Main_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Number_minus_Background + LStd_Number , label = Number_label + ' + Standard Deviation'  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_NumberSTD , alpha = Std_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Number_minus_Background - LStd_Number , label = Number_label + ' - Standard Deviation'  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_NumberSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Number_label)
 plt.legend()
@@ -695,6 +843,7 @@ plt.title("Particle {} over {}".format(Concentration_label , Size_label))
 plt.scatter( LMean_Size , LMean_Concentration_minus_Background                      , label = Concentration_label                           , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Concentration    , alpha = Main_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Concentration_minus_Background + LStd_Concentration , label = Concentration_label + ' + Standard Deviation' , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_ConcentrationSTD , alpha = Std_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Concentration_minus_Background - LStd_Concentration , label = Concentration_label + ' - Standard Deviation' , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_ConcentrationSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Concentration_label)
 plt.legend()
@@ -704,6 +853,7 @@ plt.title("Particle {} over {}".format(Volume_label , Size_label))
 plt.scatter( LMean_Size , LMean_Volume_minus_Background                , label = Volume_label                           , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Volume    , alpha = Main_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Volume_minus_Background + LStd_Volume  , label = Volume_label + ' + Standard Deviation' , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_VolumeSTD , alpha = Std_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Volume_minus_Background - LStd_Volume  , label = Volume_label + ' - Standard Deviation' , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_VolumeSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Volume_label)
 plt.legend()
@@ -713,10 +863,13 @@ plt.title("Particle {} over {}".format(Area_label , Size_label))
 plt.scatter( LMean_Size , LMean_Area_minus_Background                , label = Area_label                           , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_Area    , alpha = Main_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Area_minus_Background + LStd_Volume  , label = Area_label + ' + Standard Deviation' , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_AreaSTD , alpha = Std_Curve_Transparency)
 plt.scatter( LMean_Size , LMean_Area_minus_Background - LStd_Volume  , label = Area_label + ' - Standard Deviation' , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_AreaSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Area_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
+
+plt.show()
 
 ###########
 ## FIGURE 4
@@ -726,6 +879,7 @@ plt.title("Particle {} Standard Deviation over {}".format(Number_label , Size_la
 plt.fill_between( LMean_Size  , + LStd_Number , - LStd_Number , label = 'Envelope of ' + Number_label             , ls = DefaultLineStyle , lw = DefaultLineWidth                         , color = DefaultColor_Number , alpha = Std_Curve_Transparency)
 plt.scatter(      LMean_Size  , + LStd_Number                 , label = '+ Standard Deviation of ' + Number_label , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_NumberSTD , alpha = Std_Curve_Transparency)
 plt.scatter(      LMean_Size  , - LStd_Number                 , label = '- Standard Deviation of ' + Number_label , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_NumberSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Number_label)
 plt.legend()
@@ -735,6 +889,7 @@ plt.title("Particle {} Standard Deviation over {}".format(Concentration_label , 
 plt.fill_between( LMean_Size , + LStd_Concentration   , - LStd_Concentration                                      , label = 'Envelope of ' + Concentration_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Concentration , alpha = Std_Curve_Transparency)
 plt.scatter(      LMean_Size , + LStd_Concentration   , label = '+ Standard Deviation of ' + Concentration_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_ConcentrationSTD    , alpha = Main_Curve_Transparency)
 plt.scatter(      LMean_Size , - LStd_Concentration   , label = '- Standard Deviation of ' + Concentration_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_ConcentrationSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Concentration_label)
 plt.legend()
@@ -744,6 +899,7 @@ plt.title("Particle {} Standard Deviation over {}".format(Volume_label , Size_la
 plt.fill_between( LMean_Size , + LStd_Volume   , - LStd_Volume                                      , label = 'Envelope of ' + Volume_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Volume , alpha = Std_Curve_Transparency)
 plt.scatter(      LMean_Size , + LStd_Volume   , label = '+ Standard Deviation of ' + Volume_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_VolumeSTD    , alpha = Main_Curve_Transparency)
 plt.scatter(      LMean_Size , - LStd_Volume   , label = '- Standard Deviation of ' + Volume_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_VolumeSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Volume_label)
 plt.legend()
@@ -753,10 +909,13 @@ plt.title("Particle {} Standard Deviation over {}".format(Area_label , Size_labe
 plt.fill_between( LMean_Size , + LStd_Area , - LStd_Area                                        , label = 'Envelope of ' + Area_label , ls = DefaultLineStyle , lw = DefaultLineWidth , color = DefaultColor_Area , alpha = Std_Curve_Transparency)
 plt.scatter(      LMean_Size , + LStd_Area   , label = '+ Standard Deviation of ' + Area_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_AreaSTD    , alpha = Main_Curve_Transparency)
 plt.scatter(      LMean_Size , - LStd_Area   , label = '- Standard Deviation of ' + Area_label  , ls = DefaultLineStyle , lw = DefaultLineWidth , s = DefaultMarkerSize , color = DefaultColor_AreaSTD , alpha = Std_Curve_Transparency)
+plt.xlim(Xmin_for_plots , Xmax_for_plots)
 plt.xlabel(Size_label)
 plt.ylabel(Area_label)
 plt.legend()
 plt.grid(visible = DefaultGridValue , which = 'both' , alpha = DefaultGridOpacity , color = DefaultGridColor , linestyle = DefaultGridLineStyle , linewidth = DefaultGridLineWidth)
+
+plt.show()
 
 ###################################
 ## SHOWING ALL GRAPHS PLOTS FIGURES
@@ -772,6 +931,11 @@ ExcelPath_and_Name = os.path.join(path_to_all_files , ExcelName_COMPLETE)
 
 # Create a dictionary containing your data arrays.
 DataDictionnary_for_ExcelFile = {
+  'HEADER Variable Name'                                : List_Header_Variable_Names_for_EXCEL ,
+  'HEADER 1 : Variable Information'                     : List_Header_Variable_Strings_for_EXCEL[0] ,
+  'HEADER 2 : Variable Information'                     : List_Header_Variable_Strings_for_EXCEL[1] ,
+  'HEADER 3 : Variable Information'                     : List_Header_Variable_Strings_for_EXCEL[2] ,
+  'HEADER 4 : Variable Information'                     : List_Header_Variable_Strings_for_EXCEL[3] ,
   'MEAN '       + Size_label                            : LMean_Size ,
   'MEAN '       + Size_label          + ' - Background' : LMean_Size_minus_Background , 
   'Backgroung ' + Size_label                            : LBackground_on_Size , 
@@ -798,25 +962,27 @@ DataDictionnary_for_ExcelFile = {
   'STD '        + Area_label                            : LStd_Area , 
   'LOG '        + Area_label                            : LMean_Area_LOG }
 
-# Convert the dictionary to a pandas DataFrame.
-try     : # Try to directly convert the dictionnary into a dataframe
-  DataFrame_for_ExcelFile = pd.DataFrame(DataDictionnary_for_ExcelFile)
+# Try to directly convert the dictionnary into a pandas dataframe
+try     : DataFrame_for_ExcelFile = pd.DataFrame(DataDictionnary_for_ExcelFile)
 except  : # Try to convert the dictionnary transposed to avoid "ValueError: All arrays must be of the same length" ERROR. Then transpose again to get back to the initial shape
   DataFrame_for_ExcelFile = pd.DataFrame.from_dict(DataDictionnary_for_ExcelFile , orient = 'index')
   DataFrame_for_ExcelFile = DataFrame_for_ExcelFile.transpose()
 
-# Save the DataFrame to an Excel file using the to_excel method.
-DataFrame_for_ExcelFile.to_excel(ExcelPath_and_Name, index = False)
+# Save the DataFrame to an Excel file using the to_excel method + freezing the first row
+with pd.ExcelWriter(ExcelPath_and_Name , engine = 'openpyxl') as writer :
+  DataFrame_for_ExcelFile.to_excel(writer , index = False , sheet_name = Excel_Sheet_Default_Name)
+  writer.sheets[Excel_Sheet_Default_Name].freeze_panes = Excel_Cells_to_Freeze
+
 print("\n\tExcel file saved : {}".format(ExcelPath_and_Name))
 
 #################
 ## END OF PROGRAM
-TIME_END_PROGRAM = time.time()
-ELAPSED_TIME_PROGRAM = round(TIME_END_PROGRAM - TIME_START_PROGRAM , 2)
-ELAPSED_TIME_PROGRAM_DD = int(ELAPSED_TIME_PROGRAM/(3600*24))
-ELAPSED_TIME_PROGRAM_HH = int((ELAPSED_TIME_PROGRAM - ELAPSED_TIME_PROGRAM_DD * 3600 * 24)/3600)
-ELAPSED_TIME_PROGRAM_MN = int((ELAPSED_TIME_PROGRAM - ELAPSED_TIME_PROGRAM_DD * 3600 * 24 - ELAPSED_TIME_PROGRAM_HH * 3600)/60)
-ELAPSED_TIME_PROGRAM_SS = int(ELAPSED_TIME_PROGRAM - ELAPSED_TIME_PROGRAM_DD * 3600 * 24 - ELAPSED_TIME_PROGRAM_HH * 3600 - ELAPSED_TIME_PROGRAM_MN * 60)
+TIME_END_PROGRAM        = time.time()
+ELAPSED_TIME_PROGRAM    = round(TIME_END_PROGRAM - TIME_START_PROGRAM , 2)
+ELAPSED_TIME_PROGRAM_DD = int( ELAPSED_TIME_PROGRAM / (3600*24))
+ELAPSED_TIME_PROGRAM_HH = int((ELAPSED_TIME_PROGRAM - ELAPSED_TIME_PROGRAM_DD * 3600 * 24) / 3600)
+ELAPSED_TIME_PROGRAM_MN = int((ELAPSED_TIME_PROGRAM - ELAPSED_TIME_PROGRAM_DD * 3600 * 24 - ELAPSED_TIME_PROGRAM_HH * 3600) / 60)
+ELAPSED_TIME_PROGRAM_SS = int( ELAPSED_TIME_PROGRAM - ELAPSED_TIME_PROGRAM_DD * 3600 * 24 - ELAPSED_TIME_PROGRAM_HH * 3600 - ELAPSED_TIME_PROGRAM_MN * 60)
 
 if    ELAPSED_TIME_PROGRAM < 60         : print("Elapsed time : {}s."             .format(ELAPSED_TIME_PROGRAM_SS))
 elif  ELAPSED_TIME_PROGRAM < 3600       : print("Elapsed time : {}mn {}s."        .format(ELAPSED_TIME_PROGRAM_MN , ELAPSED_TIME_PROGRAM_SS))
